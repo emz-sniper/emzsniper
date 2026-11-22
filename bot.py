@@ -76,7 +76,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not await guard(update):
         return
     await update.effective_message.reply_text(
-        "EMZ SNIPER este pornit — MOD SIMULARE בלבד.\n"
+        "EMZ SNIPER este pornit — MOD SIMULARE.\n"
         "Comenzi:\n/price BTC — preț orientativ\n"
         "/buy BTC 25 — cumpără simulativ de 25 RON\n"
         "/sell BTC 0.0001 — vinde cantitatea indicată\n"

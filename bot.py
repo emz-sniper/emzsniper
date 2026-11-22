@@ -67,6 +67,12 @@ def price(symbol: str) -> float:
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not OWNER_CHAT_ID:
+        await update.effective_message.reply_text(
+            f"ID-ul conversației tale este: {update.effective_chat.id}\\n"
+            "Adaugă acest număr ca OWNER_CHAT_ID în .env, apoi repornește botul."
+        )
+        return
     if not await guard(update):
         return
     await update.effective_message.reply_text(

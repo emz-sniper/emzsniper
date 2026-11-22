@@ -18,7 +18,19 @@ START_BALANCE_RON = float(os.getenv("PAPER_START_RON", "100"))
 RON_PER_USDT = float(os.getenv("RON_PER_USDT", "4.6"))
 STATE_FILE = Path(os.getenv("STATE_FILE", "paper_state.json"))
 FEE_RATE = 0.001
-API = "https://api.binance.com/api/v3/ticker/price"
+COINGECKO_API = "https://api.coingecko.com/api/v3/simple/price"
+# CoinGecko IDs for common crypto tickers. Unknown symbols are rejected safely.
+COIN_IDS = {
+    "BTC": "bitcoin", "ETH": "ethereum", "BNB": "binancecoin",
+    "SOL": "solana", "XRP": "ripple", "ADA": "cardano",
+    "DOGE": "dogecoin", "TRX": "tron", "TON": "the-open-network",
+    "LINK": "chainlink", "AVAX": "avalanche-2", "DOT": "polkadot",
+    "LTC": "litecoin", "BCH": "bitcoin-cash", "SHIB": "shiba-inu",
+    "XLM": "stellar", "ATOM": "cosmos", "NEAR": "near",
+    "ETC": "ethereum-classic", "UNI": "uniswap", "APT": "aptos",
+    "SUI": "sui", "FIL": "filecoin", "ICP": "internet-computer",
+    "AAVE": "aave", "ARB": "arbitrum", "OP": "optimism",
+}
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("emzsniper")
 
@@ -52,18 +64,26 @@ async def guard(update: Update) -> bool:
     if not allowed(update):
         await update.effective_message.reply_text("Acces neautorizat.")
         return False
-    return True
 
 
 def price(symbol: str) -> float:
-    symbol = symbol.upper()
-    if not symbol.endswith("USDT"):
-        symbol += "USDT"
-    if not symbol[:-4].isalnum() or len(symbol) > 20:
-        raise ValueError("Simbol invalid. Exemplu: BTC sau ETH.")
-    response = requests.get(API, params={"symbol": symbol}, timeout=10)
+    symbol = symbol.upper().replace("USDT", "")
+    coin_id = COIN_IDS.get(symbol)
+    if not coin_id:
+        supported = ", ".join(sorted(COIN_IDS))
+        raise ValueError(f"Monedă nesuportată: {symbol}. Exemple disponibile: {supported}")
+    response = requests.get(
+        COINGECKO_API,
+        params={"ids": coin_id, "vs_currencies": "usd"},
+        headers={"accept": "application/json", "User-Agent": "EMZ-SNIPER-paper-bot/1.0"},
+        timeout=15,
+    )
     response.raise_for_status()
-    return float(response.json()["price"])
+    data = response.json()
+    value = data.get(coin_id, {}).get("usd")
+    if value is None:
+        raise ValueError(f"CoinGecko nu a returnat un preț pentru {symbol}.")
+    return float(value)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):

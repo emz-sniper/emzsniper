@@ -64,6 +64,7 @@ async def guard(update: Update) -> bool:
     if not allowed(update):
         await update.effective_message.reply_text("Acces neautorizat.")
         return False
+    return True
 
 
 def price(symbol: str) -> float:

@@ -185,8 +185,6 @@ async def portfolio(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     if not TOKEN:
         raise SystemExit("Lipsește TELEGRAM_BOT_TOKEN din .env")
-    if not OWNER_CHAT_ID:
-        raise SystemExit("Lipsește OWNER_CHAT_ID din .env")
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_cmd))
